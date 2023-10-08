@@ -10,21 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const x_points = [];
 
-    // const big_points = [
-    //     { x: 100, y: 200 },
-    //     { x: 250, y: 80 },
-    //     { x: 370, y: 70 },
-    //     { x: 500, y: 90 },
-    //     { x: 150, y: 0 },
-    //     { x: 270, y: 380 }
-    // ];
-
-    // const points = [
-    //     { x: 0, y: 300 },
-    //     { x: 370, y: 340 },
-    //     { x: 370, y: 0 }
-    // ];
-
     const big_points = [
         { x: 240, y: 135 },
         { x: 70, y: 245 },
@@ -317,14 +302,197 @@ document.addEventListener("DOMContentLoaded", function () {
         context.putImageData(imageData, 0, 0);
     }
 
+    function getBlackAndWhitePixelValues() {
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const pixelValues = [];
+    
+        // Initialize the 2D array
+        for (let y = 0; y < canvas.height; y++) {
+            pixelValues[y] = [];
+        }
+
+        let dataIndex = 0; // Index to iterate through the pixel data array
+
+        for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+                // More initialization
+                pixelValues[y][x] = [];
+
+                // Calculate grayscale value (assuming image is already black and white)
+                const grayscale = data[dataIndex];
+
+                // Store the grayscale value in the 2D array
+                for (let i = 0; i < 4; i++) {
+                    pixelValues[y][x][i] = grayscale;
+                }
+
+                // Move to the next pixel in the data array
+                dataIndex += 4;
+            }
+        }
+
+        return pixelValues;
+    }
+
+    function findColorIndex(rgb) {
+        for (let i = 0; i < point_rgb.length; i++) {
+            const color = point_rgb[i];
+    
+            // Check if the RGB values match
+            if (color[0] === rgb[0] && color[1] === rgb[1] && color[2] === rgb[2]) {
+                return i; // Return the index where the match was found
+            }
+        }
+    
+        return -1; // Return -1 if no match was found
+    }
+
+    const queue = [];
+    const blacklist = [];
+    const point_rgb = [];
+    const connections = [];
+
+    function bfsFillStep(matrix, rgb, queueIndex) {
+        const directions = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
+    
+        if (queue[queueIndex].length > 0) {
+            // Remove first element from queue and set the coords to x and y
+            const { x, y } = queue[queueIndex].shift();
+    
+            // Check if the pixel color is not black (0), white (255), or own color
+            if (matrix[y][x][0] !== 0 && matrix[y][x][0] !== 255 && !(matrix[y][x][0] == rgb[0] && matrix[y][x][1] == rgb[1] && matrix[y][x][2] == rgb[2])) {
+                // queue[queueIndex] = [];
+                blacklist[queueIndex].push(matrix[y][x]);
+                c = findColorIndex(matrix[y][x]);
+                connections[queueIndex][c] = 1;
+                connections[c][queueIndex] = 1;
+                return; // Exit the loop
+            }
+
+            // Check if the pixel has a color that is blacklisted
+            for (const color of blacklist[queueIndex]) {
+                if ( matrix[y][x][0] == color[0] && matrix[y][x][1] == color[1] && matrix[y][x][2] == color[2]) {
+                    return; // Skip this pixel
+                }
+            }
+
+            // Check if the pixel is already filled with color or a non-black-and-white pixel
+            if (matrix[y][x][0] !== 255) {
+                return; // Skip this pixel
+            }
+    
+            // Overwrite blank white matrix with the specified color
+            for (let i = 0; i < 3; i++) {
+                matrix[y][x][i] = rgb[i];
+            }
+    
+            // Explore neighboring pixels
+            for (const direction of directions) {
+                const newX = x + direction.x;
+                const newY = y + direction.y;
+        
+                // Check if the neighboring pixel is within bounds
+                if (newX >= 0 && newX < matrix[0].length && newY >= 0 && newY < matrix.length) {
+                    queue[queueIndex].push({ x: newX, y: newY });
+                }
+            }
+        }
+    }
+
+    function callBfsFill(BWgrid) {
+        r = 30;
+        g = 30;
+        b = 30;
+
+        j = 0;
+        for (p = 0; p < big_points.length; p++) {
+            blacklist[j] = [];
+            queue[j] = [{ x: big_points[p].x, y: big_points[p].y }];
+            r = (r-60+194)%195 + 31;
+            bfsFillStep(BWgrid, [r, g, b], j++);
+            point_rgb[j-1] = [r, g, b];
+        }
+        r = 30;
+        for (p = 0; p < points.length; p++) {
+            blacklist[j] = [];
+            queue[j] = [{ x: points[p].x, y: points[p].y }];
+            b = (b-60+194)%195 + 31;
+            bfsFillStep(BWgrid, [r, g, b], j++);
+            point_rgb[j-1] = [r, g, b];
+        }
+
+        for (y = 0; y < j; y++) {
+            connections[y] = [];
+        }
+        for (y = 0; y < j; y++) {
+            for (x = 0; x < j; x++) {
+
+                connections[y][x] = 0;
+            }
+        }
+
+        for (i = 0; i < 520*520; i++) {
+            k = 0;
+            for (p = 0; p < big_points.length; p++) {
+                bfsFillStep(BWgrid, point_rgb[k], k++)
+            }
+            for (p = 0; p < points.length; p++) {
+                bfsFillStep(BWgrid, point_rgb[k], k++)
+            }
+        }
+    }
+
+    function drawImageFromMatrix(matrix) {
+        // Assuming canvas and context are defined as in your previous code
+        const imageData = context.createImageData(matrix[0].length, matrix.length);
+        const data = imageData.data;
+    
+        for (let y = 0; y < matrix.length; y++) {
+            for (let x = 0; x < matrix[0].length; x++) {
+                const index = (y * matrix[0].length + x) * 4; // Calculate the data index
+
+                // Set the RGB channels based on the color value
+                for (let i = 0; i < 3; i++) {
+                    data[index + i] = matrix[y][x][i];
+                }
+                data[index + 3] = 255; // Alpha (fully opaque)
+            }
+        }
+    
+        // Put the modified pixel data back onto the canvas
+        context.putImageData(imageData, 0, 0);
+    }
+
+    function getUniqueValues2D(array2D) {
+        const uniqueValues = new Set();
+    
+        for (const row of array2D) {
+            for (const value of row) {
+                uniqueValues.add(value);
+            }
+        }
+    
+        return Array.from(uniqueValues);
+    }
+    
+
     // NEW: Draw background image
     const map = new Image();
     map.onload = function () {
         context.drawImage(map, 0, 0, canvas.width, canvas.height);
-        // applyCutoffFilter(145);
-        // drawPoints();
-        drawCastles();
+        applyCutoffFilter(145);
         findAllValidGroupings(big_points);
+        const blackAndWhitePixels = getBlackAndWhitePixelValues();
+        // drawPoints();
+        callBfsFill(blackAndWhitePixels);
+        // Call the function to redraw the canvas with the modified image
+        drawImageFromMatrix(blackAndWhitePixels);
+        const uniqueValues = new Set(blackAndWhitePixels);
+        console.log(blackAndWhitePixels);
+        console.log(getUniqueValues2D(blackAndWhitePixels));
+        
+        drawCastles();
         drawXPoints();
     };
     map.src = "/Trailblazer/images/map.png";
