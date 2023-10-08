@@ -509,18 +509,6 @@ document.addEventListener("DOMContentLoaded", function () {
         context.putImageData(imageData, 0, 0);
     }
 
-    function getUniqueValues2D(array2D) {
-        const uniqueValues = new Set();
-    
-        for (const row of array2D) {
-            for (const value of row) {
-                uniqueValues.add(value);
-            }
-        }
-    
-        return Array.from(uniqueValues);
-    }
-
     // NEW: Draw background image
     const map = new Image();
     map.onload = function () {
@@ -528,14 +516,10 @@ document.addEventListener("DOMContentLoaded", function () {
         applyCutoffFilter(145);
         findAllValidGroupings(big_points);
         const blackAndWhitePixels = getBlackAndWhitePixelValues();
-        // drawPoints();
-        callBfsFill(blackAndWhitePixels);
-        // Call the function to redraw the canvas with the modified image
-        drawImageFromMatrix(blackAndWhitePixels);
-        const uniqueValues = new Set(blackAndWhitePixels);
-        console.log(blackAndWhitePixels);
-        console.log(getUniqueValues2D(blackAndWhitePixels));
-        
+        callBfsFill(blackAndWhitePixels);   // draws points
+
+        drawImageFromMatrix(blackAndWhitePixels); // draws over image w/ colors
+        // context.drawImage(map, 0, 0, canvas.width, canvas.height);
         drawCastles();
         drawXPoints();
     };
