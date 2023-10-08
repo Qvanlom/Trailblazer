@@ -5,21 +5,41 @@ document.addEventListener("DOMContentLoaded", function () {
     const radiusCutoff = 150;
     const x_shift = 0.07;
 
+    const complete_graph = [];
+    const path_list = [];
+
     const x_points = [];
 
+    // const big_points = [
+    //     { x: 100, y: 200 },
+    //     { x: 250, y: 80 },
+    //     { x: 370, y: 70 },
+    //     { x: 500, y: 90 },
+    //     { x: 150, y: 0 },
+    //     { x: 270, y: 380 }
+    // ];
+
+    // const points = [
+    //     { x: 0, y: 300 },
+    //     { x: 370, y: 340 },
+    //     { x: 370, y: 0 }
+    // ];
+
     const big_points = [
-        { x: 100, y: 200 },
-        { x: 250, y: 80 },
-        { x: 370, y: 70 },
-        { x: 500, y: 90 },
-        { x: 150, y: 0 },
-        { x: 270, y: 380 }
+        { x: 240, y: 135 },
+        { x: 70, y: 245 },
+        { x: 305, y: 430 }
     ];
 
     const points = [
-        { x: 0, y: 300 },
-        { x: 370, y: 340 },
-        { x: 370, y: 0 }
+        { x: 210, y: 50 },
+        { x: 100, y: 180 },
+        { x: 320, y: 245 },
+        { x: 230, y: 290 },
+        { x: 135, y: 365 },
+        { x: 425, y: 395 },
+        { x: 460, y: 255 },
+        { x: 410, y: 100 }
     ];
 
     // Draws all the points on the canvas
@@ -301,13 +321,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const map = new Image();
     map.onload = function () {
         context.drawImage(map, 0, 0, canvas.width, canvas.height);
-        // applyCutoffFilter(185);
-        drawPoints();
+        // applyCutoffFilter(145);
+        // drawPoints();
         drawCastles();
         findAllValidGroupings(big_points);
         drawXPoints();
     };
-    map.src = "/Trailblazer/images/donut.png";
+    map.src = "/Trailblazer/images/map.png";
 
     // :)
 });
