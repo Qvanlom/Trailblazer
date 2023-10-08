@@ -8,6 +8,6 @@ Just plain old HTML,CSS, and JS.
 # Challenges we ran into
 We spent a lot of time figuring out the mathematics behind our path generation algorithms, and had trouble initializing our GitHub repo.
 # Accomplishments that we're proud of
-Ian got second in the Geico balloon race.
+Yousef and Quinton won round 2 of the MLH cup stacking, and Ian got second in the Geico balloon race. yay
 # What we learned
 white castle isn't that great when it's cold
