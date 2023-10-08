@@ -400,6 +400,47 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function drawLine(p1, p2) {
+        context.beginPath();
+        context.moveTo(p1[0], p1[1]);
+        context.lineTo(p2[0], p2[1]);
+
+        context.strokeStyle = "green";
+        context.lineWidth = 5;
+
+        context.stroke();
+        console.log(p1, p2);
+    }
+
+    // draw lines function
+    function drawPaths() {
+        // console.log(connections);
+        sizeLen = big_points.length + points.length;
+        cutoff = big_points.length;
+        for (y = 0; y < sizeLen; y++) {
+            for (x = 0; x < sizeLen-y; x++) {
+                if (connections[y][x]) {
+                    p1 = [];
+                    if (y < cutoff) {
+                        p1 = [big_points[y].x, big_points[y].y];
+                    } else {
+                        p1 = [points[y - cutoff].x, points[y - cutoff].y];
+                    }
+
+                    p2 = [];
+                    if (x < cutoff) {
+                        p2 = [big_points[x].x, big_points[x].y];
+                    } else {
+                        p2 = [points[x - cutoff].x, points[x - cutoff].y];
+                    }
+
+                    drawLine(p1, p2);
+                }
+            }
+        }
+        big_points.length
+    }
+
     function callBfsFill(BWgrid) {
         r = 30;
         g = 30;
@@ -441,6 +482,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 bfsFillStep(BWgrid, point_rgb[k], k++)
             }
         }
+
+        map.onload = function () {
+            drawPaths();
+        }
     }
 
     function drawImageFromMatrix(matrix) {
@@ -475,7 +520,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         return Array.from(uniqueValues);
     }
-    
 
     // NEW: Draw background image
     const map = new Image();
